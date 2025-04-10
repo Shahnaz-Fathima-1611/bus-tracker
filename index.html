@@ -33,6 +33,33 @@
             font-size: 1.8rem;
         }
 
+        .search-container {
+            display: flex;
+            padding: 15px;
+            background-color: white;
+            border-bottom: 2px solid #FF6B00;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: 2px solid #FF6B00;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .search-button {
+            background-color: #FF6B00;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+
         .content {
             display: flex;
             flex: 1;
@@ -187,6 +214,77 @@
             background-color: #FF6B00;
             color: white;
         }
+
+             .route-panel {
+                position: absolute;
+                top: 100px;
+                right: 20px;
+                width: 250px;
+                border-radius: 0 0 10px 10px;
+                overflow: hidden;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                }
+
+                .route-header {
+                background: #FF6B00;
+                color: white;
+                padding: 10px;
+                font-weight: bold;
+                font-size: 18px;
+                }
+
+                .route-body {
+                background: white;
+                padding: 10px;
+                }
+
+                .stop {
+                display: flex;
+                align-items: flex-start;
+                margin: 10px 0;
+                }
+
+                .dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                margin-right: 10px;
+                margin-top: 5px;
+                background-color: #FF6B00;
+                }
+
+                .dot.unfilled {
+                border: 2px solid #FF6B00;
+                background-color: white;
+                }
+
+                .bus-arrival {
+                font-size: 12px;
+                color: #1e90ff;
+                }
+
+                .bus-number {
+                background: #e0e0e0;
+                display: inline-block;
+                margin-top: 3px;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-weight: bold;
+                }
+
+                .bus-icon {
+                background: #FF6B00;
+                padding: 2px 5px;
+                color: white;
+                border-radius: 2px;
+                margin-right: 5px;
+                }
+
+                /* Highlight selected bus card in orange */
+                .bus-item.selected-bus {
+                background-color: #FF6B00 !important;
+                color: white;
+                }
     </style>
 </head>
 <body>
@@ -194,21 +292,60 @@
         <h1>TrackNSeat</h1>
     </header>
 
+    <div class="search-container">
+        <input type="text" class="search-input" id="fromLocation" placeholder="From: Your Current Location" value="Enter your Bus Stop">
+        <input type="text" class="search-input" id="toLocation" placeholder="To: College Campus" value="Get your Bus Location">
+        <button class="search-button" onclick="updateRoute()">Update</button>
+    </div>
+
     <div class="content">
         <div class="sidebar">
             <h2>Available Buses</h2>
             <ul class="buses-list">
+                
                 <li class="bus-item" onclick="showBusDetails('Bus 101', 15, '5 min')">
                     <h3>Bus 101</h3>
                     <div>Route: Main Gate - Campus</div>
+                    <div class="bus-item" onclick="toggleRoutePanel('101')" id="bus-101">Bus 101</div>
                     <div class="bus-info">
                         <span>ETA: 5 min</span>
                         <span class="seats-available">15 seats</span>
                     </div>
                 </li>
+                <li class="bus-item" onclick="showBusDetails('Bus 203', 8, '12 min', false)">
+                    <h3>Bus 203</h3>
+                    <div>Route: Hostels - Library</div>
+                    <div class="bus-info">
+                        <span>ETA: 12 min</span>
+                        <span class="seats-available">8 seats</span>
+                    </div>
+                </li>
+                <li class="bus-item" onclick="showBusDetails('Bus 305', 22, '2 min', false)">
+                    <h3>Bus 305</h3>
+                    <div>Route: Stadium - Main Gate</div>
+                    <div class="bus-info">
+                        <span>ETA: 2 min</span>
+                        <span class="seats-available">22 seats</span>
+                    </div>
+                </li>
+                <li class="bus-item" onclick="showBusDetails('Bus 412', 3, '7 min', false)">
+                    <h3>Bus 412</h3>
+                    <div>Route: Library - Hostels</div>
+                    <div class="bus-info">
+                        <span>ETA: 7 min</span>
+                        <span class="seats-available">3 seats</span>
+                    </div>
+                </li>
+                <li class="bus-item" onclick="showBusDetails('Bus 509', 17, '15 min', false)">
+                    <h3>Bus 509</h3>
+                    <div>Route: Campus - Stadium</div>
+                    <div class="bus-info">
+                        <span>ETA: 15 min</span>
+                        <span class="seats-available">17 seats</span>
+                    </div>
+                </li>
             </ul>
         </div>
-
         <div class="map-container">
             <div id="map"></div>
 
@@ -243,10 +380,31 @@
         </div>
     </div>
 
+<!-- Route Panel for Bus 101 -->
+<div id="route-panel-101" class="route-panel" style="display: none;">
+    <div class="route-header">Bus 101<br><small>To Campus Terminal</small></div>
+    <div class="route-body">
+      <div class="stop filled"><div class="dot"></div><div class="stop-info"><strong>Triplicane</strong></div></div>
+      <div class="stop filled"><div class="dot"></div><div class="stop-info"><strong>D1 Police Station</strong></div></div>
+      <div class="stop filled">
+        <div class="dot"></div>
+        <div class="stop-info">
+          <strong>Ice House</strong>
+          <div class="bus-arrival">In 13 min</div>
+          <div class="bus-number"><span class="bus-icon">B</span> K0101</div>
+        </div>
+      </div>  
+      <!-- Unfilled (remaining) -->
+      <div class="stop "><div class="dot unfilled"></div><div class="stop-info"><strong>Meesapet Market</strong></div></div>
+      <div class="stop"><div class="dot unfilled"></div><div class="stop-info"><strong>New College</strong></div></div>
+      <div class="stop"><div class="dot unfilled"></div><div class="stop-info"><strong>Fire Office</strong></div></div>
+      <div class="stop"><div class="dot unfilled"></div><div class="stop-info"><strong>Poonamallee Bye Pass</strong></div></div>
+    </div>
+  </div>
     <!-- Google Maps API and custom map logic -->
     <script src="map.js"></script>
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFJvTQFI99waOPgeaCPAklYcN4uNj7vjY&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFJvTQFI99waOPgeaCPAklYcN4uNj7vjY&callback=initMap&libraries=places">
     </script>
 </body>
 </html>
