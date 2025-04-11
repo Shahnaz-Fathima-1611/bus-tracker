@@ -39,7 +39,7 @@ function initMap() {
                 icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             });
 
-            // Add circle around user's location (e.g., 500 meter radius)
+            // Add circle around user's location
             const userCircle = new google.maps.Circle({
                 strokeColor: "#4285F4",
                 strokeOpacity: 0.8,
@@ -48,48 +48,75 @@ function initMap() {
                 fillOpacity: 0.1,
                 map: map,
                 center: userPos,
-                radius: 5000 // radius in meters
-             });
-
-            // Dummy bus location (replace with live GPS data from your backend)
-            const busPos = {
-                lat: 13.0380, // example coordinates
-                lng: 80.1240,
-            };
-
-            // Add marker for bus
-            busMarker = new google.maps.Marker({
-                position: busPos,
-                map: map,
-                title: "Bus 101",
-                icon:{
-                    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
-                        '<circle cx="20" cy="20" r="18" fill="white" stroke="#FF6B00" stroke-width="3"/>' +
-                        '<text x="20" y="25" font-family="Arial" font-size="12" font-weight="bold" fill="#FF6B00" text-anchor="middle">101</text>' +
-                        '</svg>'
-                    ),
-                    scaledSize: new google.maps.Size(40, 40)
-                } 
-                
+                radius: 5000 // 5km radius
             });
-            // Add marker for other buses
+
+            // Fetch live GPS coordinates for Bus 101 from NodeMCU
+            fetch("http://192.168.103.61/")
+                .then(response => response.json())
+                .then(data => {
+                    const busPos = {
+                        lat: data.lat,
+                        lng: data.lng
+                    };
+
+                    // Add marker for Bus 101
+                    busMarker = new google.maps.Marker({
+                        position: busPos,
+                        map: map,
+                        title: "Bus 101",
+                        icon: {
+                            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
+                                '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+                                '<circle cx="20" cy="20" r="18" fill="white" stroke="#FF6B00" stroke-width="3"/>' +
+                                '<text x="20" y="25" font-family="Arial" font-size="12" font-weight="bold" fill="#FF6B00" text-anchor="middle">101</text>' +
+                                '</svg>'
+                            ),
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+
+                    map.setCenter(userPos);
+                    calculateAndDisplayRoute(userPos, busPos);
+                })
+                .catch(error => {
+                    console.error("Error fetching bus location from GPS:", error);
+                    alert("Failed to load live GPS data. Showing default bus location.");
+
+                    // Fallback dummy bus location
+                    const busPos = {
+                        lat: 13.0380,
+                        lng: 80.1240,
+                    };
+
+                    busMarker = new google.maps.Marker({
+                        position: busPos,
+                        map: map,
+                        title: "Bus 101",
+                        icon: {
+                            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
+                                '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+                                '<circle cx="20" cy="20" r="18" fill="white" stroke="#FF6B00" stroke-width="3"/>' +
+                                '<text x="20" y="25" font-family="Arial" font-size="12" font-weight="bold" fill="#FF6B00" text-anchor="middle">101</text>' +
+                                '</svg>'
+                            ),
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+
+                    map.setCenter(userPos);
+                    calculateAndDisplayRoute(userPos, busPos);
+                });
+
+            // Add markers for other buses (static positions)
             const otherBuses = [
-                {
-                    id: "203",
-                    position: { lat: 13.0450, lng: 80.1500 }
-                },
-                {
-                    id: "305",
-                    position: { lat: 13.0758, lng: 80.1186}
-                },
-                {
-                    id: "412",
-                    position: { lat: 13.1158, lng: 80.1022 }
-                }
-            ];            
+                { id: "203", position: { lat: 13.0450, lng: 80.1500 } },
+                { id: "305", position: { lat: 13.0758, lng: 80.1186 } },
+                { id: "412", position: { lat: 13.1158, lng: 80.1022 } }
+            ];
+
             otherBuses.forEach(bus => {
-                const marker = new google.maps.Marker({
+                new google.maps.Marker({
                     position: bus.position,
                     map: map,
                     title: "Bus " + bus.id,
@@ -103,14 +130,8 @@ function initMap() {
                         scaledSize: new google.maps.Size(40, 40)
                     }
                 });
-            
             });
-    
-            // Center map around user
-            map.setCenter(userPos);
 
-            // Show route between user and bus
-            calculateAndDisplayRoute(userPos, busPos);
         }, () => {
             alert("Geolocation failed.");
         });
@@ -120,22 +141,21 @@ function initMap() {
 }
 
 function toggleRoutePanel(busId) {
-  const panel = document.getElementById(`route-panel-${busId}`);
-  const busItem = document.getElementById(`bus-${busId}`);
+    const panel = document.getElementById(`route-panel-${busId}`);
+    const busItem = document.getElementById(`bus-${busId}`);
 
-  // Toggle display
-  if (panel.style.display === "block") {
-    panel.style.display = "none";
-    busItem.classList.remove("selected-bus");
-  } else {
-    // Hide all other panels
-    document.querySelectorAll('.route-panel').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.bus-item').forEach(item => item.classList.remove('selected-bus'));
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        busItem.classList.remove("selected-bus");
+    } else {
+        document.querySelectorAll('.route-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.bus-item').forEach(item => item.classList.remove('selected-bus'));
 
-    panel.style.display = "block";
-    busItem.classList.add("selected-bus");
-  }
+        panel.style.display = "block";
+        busItem.classList.add("selected-bus");
+    }
 }
+
 function calculateAndDisplayRoute(start, end) {
     directionsService.route({
         origin: start,
@@ -145,16 +165,16 @@ function calculateAndDisplayRoute(start, end) {
         if (status === google.maps.DirectionsStatus.OK) {
             directionsRenderer.setDirections(response);
             const leg = response.routes[0].legs[0];
-            
-            // Set ETA in the popup box
             document.getElementById("etaValue").textContent = leg.duration.text;
         } else {
             alert("Directions request failed due to " + status);
         }
     });
 }
+
 function centerUserLocation() {
     if (userMarker) {
         map.setCenter(userMarker.getPosition());
     }
 }
+
