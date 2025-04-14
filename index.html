@@ -391,7 +391,7 @@
         <div class="stop-info">
           <strong>Ice House</strong>
           <div class="bus-arrival">In 13 min</div>
-          <div class="bus-number"><span class="bus-icon">B</span> K0101</div>
+          <div class="bus-number"><span class="bus-icon">Bus</span> 101</div>
         </div>
       </div>  
       <!-- Unfilled (remaining) -->
@@ -401,6 +401,27 @@
       <div class="stop"><div class="dot unfilled"></div><div class="stop-info"><strong>Poonamallee Bye Pass</strong></div></div>
     </div>
   </div>
+
+     <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script>
+      const firebaseConfig = {
+    apiKey: "AIzaSyDI_z2CIdEnUIJ-5yTr5DqYFCi_u2J-SJs",
+    authDomain: "bus-tracking-83022.firebaseapp.com",
+    databaseURL: "https://bus-tracking-83022-default-rtdb.firebaseio.com",
+    projectId: "bus-tracking-83022",
+    storageBucket: "bus-tracking-83022.firebasestorage.app",
+    messagingSenderId: "184168120401",
+    appId: "1:184168120401:web:3ae083bdcacff57ee3b870",
+    measurementId: "G-YCR7GX2Y0C"
+  };
+
+  // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+  </script>
+
     <!-- Google Maps API and custom map logic -->
     <script src="map.js"></script>
     <script async defer
